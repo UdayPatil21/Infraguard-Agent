@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os/exec"
 	"runtime"
+	"strings"
 	"time"
 )
 
@@ -47,8 +48,8 @@ func PreCheck() {
 	}
 
 	// Bind all data into the object
-	obj := model.InstanceInfo{fmt.Sprintf("%s", getName), fmt.Sprintf("%s", getUserName), fmt.Sprintf("%s", getMachineId),
-		fmt.Sprintf("%s", getPublicIp), fmt.Sprintf("%s", getHostName), goos, time.Now()}
+	obj := model.InstanceInfo{strings.TrimSpace(fmt.Sprintf("%s", getName)), strings.TrimSpace(fmt.Sprintf("%s", getUserName)), strings.TrimSpace(fmt.Sprintf("%s", getMachineId)),
+		strings.TrimSpace(fmt.Sprintf("%s", getPublicIp)), strings.TrimSpace(fmt.Sprintf("%s", getHostName)), goos, time.Now()}
 
 	jsonReq, _ := json.Marshal(obj)
 
