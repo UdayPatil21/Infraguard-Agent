@@ -29,6 +29,7 @@ func PreCheck() {
 	var getHostName any
 
 	if goos == "darwin" {
+		println("System is Windows")
 		getName, _ = exec.Command("bash", "-c", "id -F").Output()
 		getUserName, _ = exec.Command("bash", "-c", "id -un").Output()
 		getPublicIp, _ = exec.Command("bash", "-c", "curl ifconfig.me && echo").Output()
@@ -36,7 +37,20 @@ func PreCheck() {
 		getMachineId, _ = exec.Command("bash", "-c", "ioreg -rd1 -c IOPlatformExpertDevice | awk '/IOPlatformUUID/ { split($0, line, \"\\\"\"); printf(\"%s\\n\", line[4]); }'").Output()
 	}
 	if goos == "windows" {
-		fmt.Println("Hello from Windows")
+		println("System is Windows")
+		// fmt.Println("Hello World")
+		getName, _ = exec.Command("cmd", "/C", "hostname").Output()
+		getUserName, _ = exec.Command("cmd", "/C", "whoami").Output()
+
+		//ipconfig | findstr /r /c:"IPv4"
+		out, _ := exec.Command("cmd", "/C", "ipconfig | findstr /r /c:IPv4").Output()
+		getPublicIp = Getdata(string(out), "IP")
+		getHostName, _ = exec.Command("cmd", "/C", "hostname").Output()
+
+		//wmic NICCONFIG WHERE IPEnabled=true GET MACAddres
+		out1, _ := exec.Command("cmd", "/C", "wmic NICCONFIG WHERE IPEnabled=true GET MACAddress").Output()
+		getMachineId = Getdata(string(out1), "MAC")
+
 	}
 	if goos == "linux" {
 		println("System is linux")
@@ -49,7 +63,7 @@ func PreCheck() {
 
 	// Bind all data into the object
 	obj := model.InstanceInfo{strings.TrimSpace(fmt.Sprintf("%s", getName)), strings.TrimSpace(fmt.Sprintf("%s", getUserName)), strings.TrimSpace(fmt.Sprintf("%s", getMachineId)),
-		strings.TrimSpace(fmt.Sprintf("%s", getPublicIp)), strings.TrimSpace(fmt.Sprintf("%s", getHostName)), goos, time.Now()}
+		strings.TrimSpace(fmt.Sprintf("%s", getPublicIp)), strings.TrimSpace(fmt.Sprintf("%s", getHostName)), goos, time.Now(), "Active"}
 
 	jsonReq, _ := json.Marshal(obj)
 
@@ -65,4 +79,18 @@ func PreCheck() {
 	defer resp.Body.Close()
 	bodyBytes, _ := ioutil.ReadAll(resp.Body)
 	log.Println(string(bodyBytes))
+}
+func Getdata(str, flag string) string {
+	var result string
+	switch flag {
+	case "IP":
+		res := strings.Split(str, ":")
+		result = res[1]
+	case "MAC":
+		res := strings.Split(str, "\n")
+		result = res[1]
+	default:
+		fmt.Println("default")
+	}
+	return result
 }

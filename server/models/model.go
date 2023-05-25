@@ -10,6 +10,7 @@ type InstanceInfo struct {
 	HostName  string    `json:"host_name"`
 	OS        string    `json:"os_name"`
 	CreatedAt time.Time `json:"createdAt"`
+	Status    string    `json:"status"`
 }
 
 type RunCommand struct {

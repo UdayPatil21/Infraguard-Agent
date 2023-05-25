@@ -1,7 +1,8 @@
 package windows
 
 import (
-	"log"
+	"infraguard-agent/helpers/logger"
+	model "infraguard-agent/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,10 +11,23 @@ import (
 func InitWindowsRoutes(routeGroup *gin.RouterGroup) {
 
 	r := routeGroup.Group("/windows")
-	r.POST("/send-command", SendCommands)
+	r.POST("/send-command", sendCommand)
 }
 
-func SendCommands(c *gin.Context) {
-	log.Println("Welcome to windows")
-	c.JSON(http.StatusOK, "done")
+//Run command on instance
+func sendCommand(c *gin.Context) {
+	logger.Info("IN:sendCommand")
+	input := model.RunCommand{}
+	err := c.Bind(&input)
+	if err != nil {
+		logger.Error("Error binding data", err)
+		c.JSON(http.StatusExpectationFailed, err)
+	}
+	out, err := sendCommandService(input)
+	if err != nil {
+		logger.Error("Error executing command on instance", err)
+		c.JSON(http.StatusExpectationFailed, err)
+	}
+	logger.Info("OUT:sendCommand")
+	c.JSON(http.StatusOK, out)
 }
