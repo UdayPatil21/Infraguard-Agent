@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"infraguard-agent/helpers/configHelper"
+	"infraguard-agent/helpers/logger"
 	model "infraguard-agent/models"
 	"io/ioutil"
 	"log"
@@ -14,13 +15,44 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
-func PreCheck() {
+func GetActivation() (model.Activation, error) {
+
+	activation := model.Activation{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: tr}
+	resp, err := client.Get(configHelper.GetString("ManagerURL") + "getAgentActivation" + model.Activation_Id)
+	if err != nil {
+		logger.Error("Error getting activation data by name", err)
+		return activation, err
+	}
+	defer resp.Body.Close()
+	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+	json.Unmarshal(bodyBytes, &activation)
+	return activation, nil
+}
+func PreCheck() error {
 
 	// Make it config based
 	// managerUrl := "http://localhost:4200/api/instance-info"
 
+	//Get activation details from manager
+	activationDetais, err := GetActivation()
+	if err != nil {
+		logger.Error("error getting activation info", err)
+		return err
+	}
+	activationId, _ := uuid.Parse(model.Activation_Id)
+	//Validate activation details
+	if activationDetais.Activation_Id != activationId && activationDetais.Actiovation_Code != model.Activation_Code {
+		//panic server because no need of further execution
+		panic("NO ACTIVATION AVAILABLE FOR PROVIDED DETAILS! PLEASE PROVIDE CORRECT ACTIVATION DETAILS")
+	}
 	goos := runtime.GOOS
 	var getName any
 	var getUserName any
@@ -63,7 +95,7 @@ func PreCheck() {
 
 	// Bind all data into the object
 	obj := model.InstanceInfo{strings.TrimSpace(fmt.Sprintf("%s", getName)), strings.TrimSpace(fmt.Sprintf("%s", getUserName)), strings.TrimSpace(fmt.Sprintf("%s", getMachineId)),
-		strings.TrimSpace(fmt.Sprintf("%s", getPublicIp)), strings.TrimSpace(fmt.Sprintf("%s", getHostName)), goos, time.Now(), "Active"}
+		strings.TrimSpace(fmt.Sprintf("%s", getPublicIp)), strings.TrimSpace(fmt.Sprintf("%s", getHostName)), goos, time.Now(), "Active", activationDetais.Id}
 
 	jsonReq, _ := json.Marshal(obj)
 
@@ -71,14 +103,16 @@ func PreCheck() {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	client := &http.Client{Transport: tr}
-	resp, err := client.Post(configHelper.GetString("ManagerURL"), "application/json; charset=utf-8", bytes.NewBuffer(jsonReq))
+	resp, err := client.Post(configHelper.GetString("ManagerURL")+"instance-info", "application/json; charset=utf-8", bytes.NewBuffer(jsonReq))
 	if err != nil {
-		log.Print(err)
+		logger.Error("Error in resistering agent", err)
+		return err
 	}
 
 	defer resp.Body.Close()
 	bodyBytes, _ := ioutil.ReadAll(resp.Body)
 	log.Println(string(bodyBytes))
+	return nil
 }
 func Getdata(str, flag string) string {
 	var result string

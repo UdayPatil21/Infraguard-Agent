@@ -4,12 +4,20 @@ import (
 	helper "infraguard-agent/helpers"
 	"infraguard-agent/helpers/configHelper"
 	"infraguard-agent/helpers/logger"
+	model "infraguard-agent/models"
 	"infraguard-agent/routes"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+
+	//Get and set global variables for activation details
+	activation_Id := os.Args[1]
+	activation_Code := os.Args[2]
+	model.Activation_Id = activation_Id
+	model.Activation_Code = activation_Code
 
 	StartServer()
 }
@@ -24,7 +32,10 @@ func StartServer() {
 	configHelper.InitConfig()
 	//Initialize routes
 	routes.Init(r)
-	helper.PreCheck()
+	err := helper.PreCheck()
+	if err != nil {
+		StartServer()
+	}
 	r.Run(":" + configHelper.GetString("Port"))
 
 }
