@@ -41,7 +41,7 @@ func executeScriptService(input model.Executable) (any, error) {
 		return nil, err
 	}
 	//change permissions of script file
-	_, err = exec.Command("bash", "-c", "chmod "+input.Permission+" "+fileName).Output()
+	_, err = exec.Command("bash", "-c", "chmod "+model.Permissions+" "+fileName).Output()
 	if err != nil {
 		logger.Error("Error in change permissions", err)
 		return nil, err
@@ -68,10 +68,11 @@ func sudoCommandService(input model.RunCommand) (any, error) {
 	// }
 	// logger.Info("Matched")
 	//sudo command
-	cmd, err := exec.Command("echo", "Digi@2023 ", " |", "sudo", "-S", "-k", input.Command).Output()
+	cmd, err := exec.Command("bash", "-c", "echo", "Digi@2023 ", " |", "sudo", "-S", "-k", input.Command).Output()
 	if err != nil {
 		return "", err
 	}
+
 	logger.Info("OUT:sudoCommandService")
 	return string(cmd), nil
 }

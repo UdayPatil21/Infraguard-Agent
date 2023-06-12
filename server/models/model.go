@@ -9,6 +9,10 @@ var (
 	Activation_Code string
 )
 
+const (
+	Permissions = "777"
+)
+
 type InstanceInfo struct {
 	Name              string    `json:"name"`
 	UserName          string    `json:"user_name"`
@@ -27,8 +31,8 @@ type RunCommand struct {
 }
 
 type Executable struct {
-	Script     []byte
-	Permission string
+	Script []byte
+	// Permission string
 }
 
 // type Activation struct {
