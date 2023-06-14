@@ -34,6 +34,10 @@ type Executable struct {
 	Script []byte
 	// Permission string
 }
+type UpdateServer struct {
+	InstanceID string `gorm:"column:InstanceID"`
+	NetIP      string `json:"NetIP"`
+}
 
 // type Activation struct {
 // 	Id               int       `json:"id" gorm:"id"`

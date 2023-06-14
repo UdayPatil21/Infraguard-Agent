@@ -19,9 +19,28 @@ import (
 	"github.com/google/uuid"
 )
 
+func GetNetworkIP() string {
+	resp, err := http.Get("http://myexternalip.com/raw")
+	if err != nil {
+		return ""
+	}
+	// Defer resp. Body.close )
+	content, _ := ioutil.ReadAll(resp.Body)
+	//buf: = new (bytes. Buffer)
+	//buf. Readfrom (resp. Body)
+	//s: = buf. String ()
+	return string(content)
+}
+
+type Response struct {
+	Data   model.AgentActivations
+	Status string
+}
+
 func GetActivation() (model.AgentActivations, error) {
 
 	activation := model.AgentActivations{}
+	res := Response{}
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
@@ -33,14 +52,16 @@ func GetActivation() (model.AgentActivations, error) {
 	}
 	defer resp.Body.Close()
 	bodyBytes, _ := ioutil.ReadAll(resp.Body)
-	json.Unmarshal(bodyBytes, &activation)
-	return activation, nil
+	json.Unmarshal(bodyBytes, &res)
+	return res.Data, nil
 }
 func PreCheck() error {
 
 	// Make it config based
 	// managerUrl := "http://localhost:4200/api/instance-info"
 
+	//Check your network ip address
+	netIP := GetNetworkIP()
 	//Get activation details from manager
 	activationDetais, err := GetActivation()
 	if err != nil {
@@ -118,7 +139,7 @@ func PreCheck() error {
 		strings.TrimSpace(fmt.Sprintf("%s", getMachineId)),
 		strings.TrimSpace(fmt.Sprintf("%s", getMachineId)),
 		goos,
-		strings.TrimSpace(fmt.Sprintf("%s", getPublicIp)),
+		netIP,
 		strings.TrimSpace(fmt.Sprintf("%s", getPublicIp)),
 		strings.TrimSpace(fmt.Sprintf("%s", getPrivateIp)),
 		strings.TrimSpace(fmt.Sprintf("%s", getPrivateIp)),
@@ -127,28 +148,28 @@ func PreCheck() error {
 		strings.TrimSpace(fmt.Sprintf("%s", getImageName)),
 		goos,
 		strings.TrimSpace(fmt.Sprintf("%s", getUserName)),
-		1,
-		2,
-		3,
-		"MissingPatches",
-		"InstalledPatches",
-		"PatchDependenciesList",
-		10,
-		"AmiID",
-		"AmiCreationDetail",
-		"PatchCommandID",
-		"InstallingPatches",
-		5, //PatchInitiatedBy
-		"2020-04-11 21:34:01",
-		"IntervalsEmailDateTime",
-		"2020-04-11 21:34:01",
+		0,
+		0,
+		0,
+		"", //MissingPatches
+		"", //InstalledPatches
+		"", //PatchDependenciesList
+		0,
+		"",                    //AmiID
+		"",                    //AmiCreationDetail
+		"",                    //PatchCommandID
+		"",                    //InstallingPatches
+		0,                     //PatchInitiatedBy
+		"2023-06-13 18:10:00", //PatchInstalledDate
+		"",                    //IntervalsEmailDateTime
+		"2023-06-13 18:10:00", //PatchScannedDate
 		strings.TrimSpace(fmt.Sprintf("%s", getHostName)),
-		"ResourceGroup",
-		1001, //ResourceGroupID
-		"SupportedAppsData",
-		time.Now().Format("2006-02-01 15:04:05"),
+		"", //ResourceGroup
+		0,  //ResourceGroupID
+		"", //SupportedAppsData
+		time.Now().Format("2006-01-02 15:04:05"),
 		activationNumber, //AgentActivationID
-		time.Now().Format("2006-02-01 15:04:05"),
+		time.Now().Format("2006-01-02 15:04:05"),
 	}
 
 	jsonReq, _ := json.Marshal(serverInfo)
@@ -165,6 +186,14 @@ func PreCheck() error {
 
 	defer resp.Body.Close()
 	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+	// server := model.UpdateServer{}
+
+	// str := "\"Agent Already Resistered\""
+	// if string(bodyBytes) == str {
+	// 	server.InstanceID = strings.TrimSpace(fmt.Sprintf("%s", getMachineId))
+	// 	server.NetIP = netIP
+	// 	UpdateNetworkIP(server)
+	// }
 	log.Println(string(bodyBytes))
 	return nil
 }
@@ -184,4 +213,15 @@ func Getdata(str, flag string) string {
 		fmt.Println("default")
 	}
 	return result
+}
+
+//Update server public ip on restart or network change
+func UpdateNetworkIP(server model.UpdateServer) {
+	logger.Info(server)
+	client := http.Client{}
+	jsonReq, _ := json.Marshal(server)
+	_, err := client.Post(configHelper.GetString("ManagerURL")+"update-ip", "application/json; charset=utf-8", bytes.NewBuffer([]byte(jsonReq)))
+	if err != nil {
+		logger.Error("Error updating agent public IP", err)
+	}
 }
