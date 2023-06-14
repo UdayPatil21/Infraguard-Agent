@@ -33,13 +33,13 @@ func GetNetworkIP() string {
 }
 
 type Response struct {
-	Data   model.AgentActivations
+	Data   model.Clusters
 	Status string
 }
 
-func GetActivation() (model.AgentActivations, error) {
+func GetActivation() (model.Clusters, error) {
 
-	activation := model.AgentActivations{}
+	activation := model.Clusters{}
 	res := Response{}
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -155,21 +155,21 @@ func PreCheck() error {
 		"", //InstalledPatches
 		"", //PatchDependenciesList
 		0,
-		"",                    //AmiID
-		"",                    //AmiCreationDetail
-		"",                    //PatchCommandID
-		"",                    //InstallingPatches
-		0,                     //PatchInitiatedBy
-		"2023-06-13 18:10:00", //PatchInstalledDate
-		"",                    //IntervalsEmailDateTime
-		"2023-06-13 18:10:00", //PatchScannedDate
+		"",         //AmiID
+		"",         //AmiCreationDetail
+		"",         //PatchCommandID
+		"",         //InstallingPatches
+		0,          //PatchInitiatedBy
+		time.Now(), //PatchInstalledDate
+		"",         //IntervalsEmailDateTime
+		time.Now(), //PatchScannedDate
 		strings.TrimSpace(fmt.Sprintf("%s", getHostName)),
 		"", //ResourceGroup
 		0,  //ResourceGroupID
 		"", //SupportedAppsData
-		time.Now().Format("2006-01-02 15:04:05"),
+		time.Now(),
 		activationNumber, //AgentActivationID
-		time.Now().Format("2006-01-02 15:04:05"),
+		time.Now(),
 	}
 
 	jsonReq, _ := json.Marshal(serverInfo)
