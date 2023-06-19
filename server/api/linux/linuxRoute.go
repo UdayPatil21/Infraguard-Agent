@@ -3,7 +3,6 @@ package linux
 import (
 	"infraguard-agent/helpers/logger"
 	model "infraguard-agent/models"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -37,14 +36,15 @@ func sendCommand(c *gin.Context) {
 //Ececute shell script on instance
 func executeScript(c *gin.Context) {
 	logger.Info("IN:executeScript")
-	input := model.Executable{}
-	// err := c.Bind(&input)
-	data, err := ioutil.ReadAll(c.Request.Body)
+
+	var input model.Executable
+
+	err := c.Bind(&input.Script)
 	if err != nil {
-		logger.Error("Error binding data", err)
+		logger.Error("error binding data", err)
 		c.JSON(http.StatusExpectationFailed, err)
+		return
 	}
-	input.Script = data
 	out, err := executeScriptService(input)
 	if err != nil {
 		logger.Error("Error executing command on instance", err)

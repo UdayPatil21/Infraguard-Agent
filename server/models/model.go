@@ -31,9 +31,10 @@ type RunCommand struct {
 }
 
 type Executable struct {
-	Script []byte
-	// Permission string
+	Script string
+	// SerialID string `json:"SerialID"`
 }
+
 type UpdateServer struct {
 	InstanceID string `gorm:"column:InstanceID"`
 	NetIP      string `json:"NetIP"`

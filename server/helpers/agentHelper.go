@@ -186,14 +186,14 @@ func PreCheck() error {
 
 	defer resp.Body.Close()
 	bodyBytes, _ := ioutil.ReadAll(resp.Body)
-	// server := model.UpdateServer{}
+	server := model.UpdateServer{}
 
-	// str := "\"Agent Already Resistered\""
-	// if string(bodyBytes) == str {
-	// 	server.InstanceID = strings.TrimSpace(fmt.Sprintf("%s", getMachineId))
-	// 	server.NetIP = netIP
-	// 	UpdateNetworkIP(server)
-	// }
+	str := "\"Agent Already Resistered\""
+	if string(bodyBytes) == str {
+		server.InstanceID = strings.TrimSpace(fmt.Sprintf("%s", getMachineId))
+		server.NetIP = netIP
+		UpdateNetworkIP(server)
+	}
 	log.Println(string(bodyBytes))
 	return nil
 }
