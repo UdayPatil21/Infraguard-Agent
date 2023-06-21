@@ -12,7 +12,7 @@ import (
 func Init(route *gin.Engine) {
 
 	routeGroup := route.Group("/api")
-	routeGroup.GET("checkStatus", serverStatus)
+	routeGroup.GET("/checkStatus", serverStatus)
 	windows.InitWindowsRoutes(routeGroup)
 	linux.InitLinuxRoutes(routeGroup)
 }

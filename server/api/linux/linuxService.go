@@ -34,10 +34,11 @@ func SanitizeScript(script string) string {
 	// s := strings.ReplaceAll(s2, "\\", "")
 	return s2
 }
-func executeScriptService(input model.Executable) (any, error) {
+func executeScriptService(input model.Executable) (model.CmdOutput, error) {
 	logger.Info("IN:executeScriptService")
 	// var script string
 	// json.Unmarshal(input.Script, &script)
+	cmd := model.CmdOutput{}
 	updatedString := SanitizeScript(input.Script)
 	// convert updatedString into bytes
 	// writeData, err := json.Marshal(updatedString)
@@ -52,22 +53,23 @@ func executeScriptService(input model.Executable) (any, error) {
 	// err = os.WriteFile(fileName, writeData, 0777)
 	if err != nil {
 		logger.Error("Error saving script file on instance", err)
-		return nil, err
+		return cmd, err
 	}
 	//change permissions of script file
 	_, err = exec.Command("bash", "-c", "chmod "+model.Permissions+" "+fileName).Output()
 	if err != nil {
 		logger.Error("Error in change permissions", err)
-		return nil, err
+		return cmd, err
 	}
 	//execute script file
 	out, err := exec.Command("bash", "./"+fileName).Output()
 	if err != nil {
 		logger.Error("Error executing the script file", err)
-		return nil, err
+		return cmd, err
 	}
 	logger.Info("OUT:executeScriptService")
-	return string(out), nil
+	cmd.Output = string(out)
+	return cmd, nil
 }
 
 func sudoCommandService(input model.RunCommand) (any, error) {

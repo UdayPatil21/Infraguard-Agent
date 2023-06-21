@@ -14,9 +14,6 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
-	"time"
-
-	"github.com/google/uuid"
 )
 
 func GetNetworkIP() string {
@@ -75,7 +72,7 @@ func PreCheck() error {
 		panic("NO ACTIVATION AVAILABLE FOR PROVIDED DETAILS! PLEASE PROVIDE CORRECT ACTIVATION DETAILS")
 	}
 	//get activation ID from details and used as AgentActivationID
-	activationNumber := activationDetais.ID
+	// activationNumber := activationDetais.ID
 	goos := runtime.GOOS
 	var getName any
 	var getUserName any
@@ -83,8 +80,8 @@ func PreCheck() error {
 	var getPublicIp any
 	var getHostName any
 	var getPrivateIp any
-	var getTimeZone any
-	var getDisk any
+	// var getTimeZone any
+	// var getDisk any
 	var getImageName any
 
 	if goos == "darwin" {
@@ -120,56 +117,53 @@ func PreCheck() error {
 		getHostName, _ = exec.Command("bash", "-c", "hostname -A").Output()
 		getMachineId, _ = exec.Command("bash", "-c", "cat /etc/machine-id").Output()
 
-		getTimeZone, _ = exec.Command("bash", "-c", "date +'%Z %z'").Output()
-		getDisk, _ = exec.Command("bash", "-c", "pwd").Output()
+		// getTimeZone, _ = exec.Command("bash", "-c", "date +'%Z %z'").Output()
+		// getDisk, _ = exec.Command("bash", "-c", "pwd").Output()
 
 		getImageName, _ = exec.Command("bash", "-c", "cat /proc/cmdline").Output()
 		getPublicIp = Getdata(strings.TrimSpace(fmt.Sprintf("%s", getPublicIp)), "INET")
 	}
 
-	// Bind all data into the object
-	// obj := model.InstanceInfo{strings.TrimSpace(fmt.Sprintf("%s", getName)), strings.TrimSpace(fmt.Sprintf("%s", getUserName)), strings.TrimSpace(fmt.Sprintf("%s", getMachineId)),
-	// 	strings.TrimSpace(fmt.Sprintf("%s", getPublicIp)), strings.TrimSpace(fmt.Sprintf("%s", getHostName)), goos, time.Now(), "Active", activationDetais.Id}
-
-	//	1	36454d1c-aefc-4aa1-8411-eca0d221e1cb	i-00165452f0f332f5b	i-00165452f0f332f5b	i-00165452f0f332f5b	t2.micro	Non Hybrid						1	0		ap-south-1a	vpc-634bbc08	subnet-80e3ffe8	launch-wizard-1(sg-0cd76d8d5ceb54570)	/dev/xvda(vol-0f92a26a7be4f0165)	amzn2-ami-hvm-2.0.20210326.0-x86_64-gp2(ami-0bcf5425cdc1d8a85)	Linux	No		36					1	2	2	No	No	No	{"Categories":["General	Security Updates"],"Patches":[{"PatchName":"chrony	CurrentVersion":"3.5.1	Version":"4.0-3.amzn2.0.1	Category":"General	Severity":","DownloadSize":","PatchCurrentStatus":","IsActive":true},{"PatchName":"ec2-utils	CurrentVersion":"1.2	Version":"1.2-44.amzn2	Category":"General	Severity":","DownloadSize":","PatchCurrentStatus":","IsActive":true},{"PatchName":"glibc	CurrentVersion":"2.26	Version":"2.26-45.amzn2	Category":"General	Severity":","DownloadSize":","PatchCurrentStatus":","IsActive":true},{"PatchName":"glibc-all-langpacks	CurrentVersion":"2.26	Version":"2.26-45.amzn2	Category":"General	Severity":","DownloadSize":","PatchCurrentStatus":","IsActive":true},{"PatchName":"glibc-common	CurrentVersion":"2.26	Version":"2.26-45.amzn2	Category":"General	Severity":","DownloadSize":","PatchCurrentStatus":","IsActive":true},{"PatchName":"glibc-locale-source	CurrentVersion":"2.26	Version":"2.26-45.amzn2	Category":"General	Severity":","DownloadSize":","PatchCurrentStatus":","IsActive":true},{"PatchName":"glibc-minimal-langpack	CurrentVersion":"2.26	Version":"2.26-45.amzn2	Category":"General	Severity":","DownloadSize":","PatchCurrentStatus":","IsActive":true},{"PatchName":"kernel	CurrentVersion":"4.14.231	Version":"4.14.232-176.381.amzn2	Category":"Security Updates	Severity":","DownloadSize":","PatchCurrentStatus":"Not Started	IsActive":true},{"PatchName":"kernel-tools	CurrentVersion":"4.14.231	Version":"4.14.232-176.381.amzn2	Category":"Security Updates	Severity":","DownloadSize":","PatchCurrentStatus":"Not Started	IsActive":true},{"PatchName":"libcrypt	CurrentVersion":"2.26	Version":"2.26-45.amzn2	Category":"General	Severity":","DownloadSize":","PatchCurrentStatus":","IsActive":true},{"PatchName":"libjpeg-turbo	CurrentVersion":"1.2.90	Version":"2.0.90-2.amzn2.0.1	Category":"General	Severity":","DownloadSize":","PatchCurrentStatus":","IsActive":true},{"PatchName":"python3	CurrentVersion":"3.7.9	Version":"3.7.9-1.amzn2.0.3	Category":"Security Updates	Severity":","DownloadSize":","PatchCurrentStatus":"Not Started	IsActive":true},{"PatchName":"python3-libs	CurrentVersion":"3.7.9	Version":"3.7.9-1.amzn2.0.3	Category":"Security Updates	Severity":","DownloadSize":","PatchCurrentStatus":"Not Started	IsActive":true},{"PatchName":"python3-pip	CurrentVersion":"9.0.3	Version":"20.2.2-1.amzn2.0.2	Category":"Security Updates	Severity":","DownloadSize":","PatchCurrentStatus":"Not Started	IsActive":true},{"PatchName":"python3-setuptools	CurrentVersion":"38.4.0	Version":"49.1.3-1.amzn2.0.2	Category":"General	Severity":","DownloadSize":","PatchCurrentStatus":","IsActive":true}]}		NULL	Yes	0			Yes			0	0000-00-00 00:00:00		0000-00-00 00:00:00			0		Yes	No	NULL	2021-05-07 16:53:56	No	Yes	No
-	SerialID := uuid.New().String()
+	// SerialID := uuid.New().String()
 	serverInfo := model.Servers{
-		SerialID,
+		// SerialID,
 		strings.TrimSpace(fmt.Sprintf("%s", getName)),
 		strings.TrimSpace(fmt.Sprintf("%s", getMachineId)),
-		strings.TrimSpace(fmt.Sprintf("%s", getMachineId)),
-		goos,
+		// strings.TrimSpace(fmt.Sprintf("%s", getMachineId)),
+		// goos,
 		netIP,
-		strings.TrimSpace(fmt.Sprintf("%s", getPublicIp)),
+		// strings.TrimSpace(fmt.Sprintf("%s", getPublicIp)),
 		strings.TrimSpace(fmt.Sprintf("%s", getPrivateIp)),
-		strings.TrimSpace(fmt.Sprintf("%s", getPrivateIp)),
-		strings.TrimSpace(fmt.Sprintf("%s", getTimeZone)),
-		strings.TrimSpace(fmt.Sprintf("%s", getDisk)),
+		// strings.TrimSpace(fmt.Sprintf("%s", getPrivateIp)),
+		// strings.TrimSpace(fmt.Sprintf("%s", getTimeZone)),
+		// strings.TrimSpace(fmt.Sprintf("%s", getDisk)),
 		strings.TrimSpace(fmt.Sprintf("%s", getImageName)),
-		goos,
+		strings.Title(goos),
 		strings.TrimSpace(fmt.Sprintf("%s", getUserName)),
-		0,
-		0,
-		0,
-		"", //MissingPatches
-		"", //InstalledPatches
-		"", //PatchDependenciesList
-		0,
-		"",         //AmiID
-		"",         //AmiCreationDetail
-		"",         //PatchCommandID
-		"",         //InstallingPatches
-		0,          //PatchInitiatedBy
-		time.Now(), //PatchInstalledDate
-		"",         //IntervalsEmailDateTime
-		time.Now(), //PatchScannedDate
+		// 0,
+		// 0,
+		// 0,
+		// "", //MissingPatches
+		// "", //InstalledPatches
+		// "", //PatchDependenciesList
+		// 0,
+		// "",         //AmiID
+		// "",         //AmiCreationDetail
+		// "",         //PatchCommandID
+		// "",         //InstallingPatches
+		// 0,          //PatchInitiatedBy
+		// time.Now(), //PatchInstalledDate
+		// "",         //IntervalsEmailDateTime
+		// time.Now(), //PatchScannedDate
 		strings.TrimSpace(fmt.Sprintf("%s", getHostName)),
-		"", //ResourceGroup
-		0,  //ResourceGroupID
-		"", //SupportedAppsData
-		time.Now(),
-		activationNumber, //AgentActivationID
-		time.Now(),
+		// "", //ResourceGroup
+		// 0,  //ResourceGroupID
+		// "", //SupportedAppsData
+		// time.Now(),
+		// activationNumber, //AgentActivationID
+		model.Activation_Id,
+		model.Activation_Code,
+		// time.Now(),
 	}
 
 	jsonReq, _ := json.Marshal(serverInfo)
