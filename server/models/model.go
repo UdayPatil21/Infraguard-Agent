@@ -13,18 +13,6 @@ const (
 	Permissions = "777"
 )
 
-type InstanceInfo struct {
-	Name              string    `json:"name"`
-	UserName          string    `json:"user_name"`
-	MachineID         string    `json:"machine_id"`
-	PublicIP          string    `json:"public_ip"`
-	HostName          string    `json:"host_name"`
-	OS                string    `json:"os_name"`
-	CreatedAt         time.Time `json:"createdAt"`
-	Status            string    `json:"status"`
-	Activation_Number int       `json:"activation_number"`
-}
-
 type RunCommand struct {
 	MachineID string `json:"machine_id" gorm:"machine_id" validate:"required"`
 	Command   string `json:"command" validate:"required"`
@@ -40,6 +28,11 @@ type CmdOutput struct {
 type UpdateServer struct {
 	InstanceID string `gorm:"column:InstanceID"`
 	NetIP      string `json:"NetIP"`
+}
+type Response struct {
+	Data   any
+	Status bool
+	Error  any
 }
 
 // type Activation struct {
@@ -104,7 +97,7 @@ type Clusters struct {
 type Servers struct {
 	//ID                     int    `gorm:"column:ID;AUTO_INCREMENT;NOT NULL"`
 	// SerialID     string `gorm:"column:SerialID;NOT NULL"`
-	Name      string `gorm:"column:Name;default:no-name-assigned"`
+	// Name      string `gorm:"column:Name;default:no-name-assigned"`
 	MachineID string `gorm:"column:MachineID;NOT NULL"`
 	// ServerID     string `gorm:"column:ServerID"`
 	// InstanceType string `gorm:"column:InstanceType"`

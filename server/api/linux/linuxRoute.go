@@ -10,8 +10,8 @@ import (
 
 func InitLinuxRoutes(routeGroup *gin.RouterGroup) {
 	r := routeGroup.Group("/linux")
-	r.POST("/send-command", sendCommand)
-	r.POST("/execute-script", executeScript)
+	r.POST("/command/execute", sendCommand)
+	r.POST("/script/execute", executeScript)
 	r.POST("/sudo-command", sudoCommand)
 }
 
@@ -51,7 +51,7 @@ func executeScript(c *gin.Context) {
 		c.JSON(http.StatusExpectationFailed, err)
 	}
 	logger.Info("OUT:executeScript")
-	c.JSON(http.StatusOK, out)
+	c.JSON(http.StatusOK, out.Output)
 }
 
 //Run sudo command on instance

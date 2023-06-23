@@ -13,7 +13,7 @@ import (
 
 func main() {
 
-	//Get and set global variables for activation details
+	// Get and set global variables for activation details
 	activation_Id := os.Args[1]
 	activation_Code := os.Args[2]
 	model.Activation_Id = activation_Id

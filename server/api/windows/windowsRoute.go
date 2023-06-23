@@ -10,7 +10,7 @@ import (
 
 func InitWindowsRoutes(routeGroup *gin.RouterGroup) {
 
-	r := routeGroup.Group("/windows")
+	r := routeGroup.Group("/platform/windows")
 	r.POST("/send-command", sendCommand)
 }
 

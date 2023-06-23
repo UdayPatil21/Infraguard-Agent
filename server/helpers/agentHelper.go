@@ -9,7 +9,6 @@ import (
 	"infraguard-agent/helpers/logger"
 	model "infraguard-agent/models"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os/exec"
 	"runtime"
@@ -29,9 +28,14 @@ func GetNetworkIP() string {
 	return string(content)
 }
 
+// type Response struct {
+// 	Data   model.Clusters
+// 	Status string
+// }
 type Response struct {
 	Data   model.Clusters
-	Status string
+	Status bool
+	Error  any
 }
 
 func GetActivation() (model.Clusters, error) {
@@ -60,21 +64,24 @@ func PreCheck() error {
 	//Check your network ip address
 	netIP := GetNetworkIP()
 	//Get activation details from manager
-	activationDetais, err := GetActivation()
-	if err != nil {
-		logger.Error("error getting activation info", err)
-		return err
-	}
+	// activationDetais, err := GetActivation()
+	// if err != nil {
+	// 	logger.Error("error getting activation info", err)
+	// 	return err
+	// }
 	// activationId, _ := uuid.Parse(model.Activation_Id)
 	//Validate activation details
-	if activationDetais.ActivationID != model.Activation_Id && activationDetais.ActivationCode != model.Activation_Code {
-		//panic server because no need of further execution
-		panic("NO ACTIVATION AVAILABLE FOR PROVIDED DETAILS! PLEASE PROVIDE CORRECT ACTIVATION DETAILS")
-	}
+	// if activationDetais.ActivationID != model.Activation_Id && activationDetais.ActivationCode != model.Activation_Code {
+	// 	logger.Error("NO ACTIVATION AVAILABLE FOR PROVIDED DETAILS! PLEASE PROVIDE CORRECT ACTIVATION DETAILS")
+	// 	logger.Error(activationDetais.ActivationID, "model"+model.Activation_Id)
+	// 	logger.Error(activationDetais.ActivationCode, "model"+model.Activation_Code)
+	// 	//panic server because no need of further execution
+	// 	panic("NO ACTIVATION AVAILABLE FOR PROVIDED DETAILS! PLEASE PROVIDE CORRECT ACTIVATION DETAILS")
+	// }
 	//get activation ID from details and used as AgentActivationID
 	// activationNumber := activationDetais.ID
 	goos := runtime.GOOS
-	var getName any
+	// var getName any
 	var getUserName any
 	var getMachineId any
 	var getPublicIp any
@@ -86,7 +93,7 @@ func PreCheck() error {
 
 	if goos == "darwin" {
 		println("System is Windows")
-		getName, _ = exec.Command("bash", "-c", "id -F").Output()
+		// getName, _ = exec.Command("bash", "-c", "id -F").Output()
 		getUserName, _ = exec.Command("bash", "-c", "id -un").Output()
 		getPublicIp, _ = exec.Command("bash", "-c", "curl ifconfig.me && echo").Output()
 		getHostName, _ = exec.Command("bash", "-c", "hostname").Output()
@@ -95,7 +102,7 @@ func PreCheck() error {
 	if goos == "windows" {
 		println("System is Windows")
 		// fmt.Println("Hello World")
-		getName, _ = exec.Command("cmd", "/C", "hostname").Output()
+		// getName, _ = exec.Command("cmd", "/C", "hostname").Output()
 		getUserName, _ = exec.Command("cmd", "/C", "whoami").Output()
 
 		//ipconfig | findstr /r /c:"IPv4"
@@ -110,7 +117,7 @@ func PreCheck() error {
 	}
 	if goos == "linux" {
 		println("System is linux")
-		getName, _ = exec.Command("bash", "-c", "cat /proc/sys/kernel/hostname").Output()
+		// getName, _ = exec.Command("bash", "-c", "cat /proc/sys/kernel/hostname").Output()
 		getUserName, _ = exec.Command("bash", "-c", "whoami").Output()
 		getPublicIp, _ = exec.Command("bash", "-c", "hostname -I").Output()
 		getPrivateIp, _ = exec.Command("bash", "-c", "hostname -i").Output()
@@ -127,7 +134,7 @@ func PreCheck() error {
 	// SerialID := uuid.New().String()
 	serverInfo := model.Servers{
 		// SerialID,
-		strings.TrimSpace(fmt.Sprintf("%s", getName)),
+		// strings.TrimSpace(fmt.Sprintf("%s", getName)),
 		strings.TrimSpace(fmt.Sprintf("%s", getMachineId)),
 		// strings.TrimSpace(fmt.Sprintf("%s", getMachineId)),
 		// goos,
@@ -162,33 +169,40 @@ func PreCheck() error {
 		// time.Now(),
 		// activationNumber, //AgentActivationID
 		model.Activation_Id,
+		// "KSH1DLFWBE1Z3MR9IND7",
+		// "99b74840-99ac-40c4-9718-182465b3098c",
 		model.Activation_Code,
 		// time.Now(),
 	}
 
 	jsonReq, _ := json.Marshal(serverInfo)
-
+	out := model.Response{}
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	client := &http.Client{Transport: tr}
-	resp, err := client.Post(configHelper.GetString("ManagerURL")+"instance-info", "application/json; charset=utf-8", bytes.NewBuffer(jsonReq))
+	resp, err := client.Post(configHelper.GetString("ManagerURL")+"registration/serverinfo", "application/json; charset=utf-8", bytes.NewBuffer(jsonReq))
 	if err != nil {
 		logger.Error("Error in resistering agent", err)
 		return err
 	}
-
 	defer resp.Body.Close()
 	bodyBytes, _ := ioutil.ReadAll(resp.Body)
-	server := model.UpdateServer{}
-
-	str := "\"Agent Already Resistered\""
-	if string(bodyBytes) == str {
-		server.InstanceID = strings.TrimSpace(fmt.Sprintf("%s", getMachineId))
-		server.NetIP = netIP
-		UpdateNetworkIP(server)
+	//Get output data from the response
+	err = json.Unmarshal(bodyBytes, &out)
+	if err != nil {
+		logger.Error("Error Unmarshaling Data", err)
+		return err
 	}
-	log.Println(string(bodyBytes))
+	logger.Info(out)
+	str := "Agent Already Resistered"
+	if out.Status && out.Data == str {
+		err := UpdateAgentInfo(serverInfo)
+		if err != nil {
+			logger.Error("Error Updating Server Data", err)
+			return err
+		}
+	}
 	return nil
 }
 func Getdata(str, flag string) string {
@@ -209,13 +223,28 @@ func Getdata(str, flag string) string {
 	return result
 }
 
-//Update server public ip on restart or network change
-func UpdateNetworkIP(server model.UpdateServer) {
+//Update server info  on restart or network change
+func UpdateAgentInfo(server model.Servers) error {
+	logger.Info("IN:UpdateAgentInfo")
 	logger.Info(server)
 	client := http.Client{}
+	out := model.Response{}
 	jsonReq, _ := json.Marshal(server)
-	_, err := client.Post(configHelper.GetString("ManagerURL")+"update-ip", "application/json; charset=utf-8", bytes.NewBuffer([]byte(jsonReq)))
+	resp, err := client.Post(configHelper.GetString("ManagerURL")+"update/serverinfo", "application/json; charset=utf-8", bytes.NewBuffer([]byte(jsonReq)))
 	if err != nil {
 		logger.Error("Error updating agent public IP", err)
 	}
+	defer resp.Body.Close()
+	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+	//Get output data from the response
+	err = json.Unmarshal(bodyBytes, &out)
+	if err != nil {
+		logger.Error("Error Unmarshaling Data", err)
+		return err
+	}
+	if !out.Status {
+		logger.Error("Error Updating Server Data")
+		return err
+	}
+	return nil
 }
