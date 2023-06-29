@@ -2,6 +2,7 @@ package windows
 
 import (
 	"infraguard-agent/helpers/logger"
+	"infraguard-agent/middleware"
 	model "infraguard-agent/models"
 	"net/http"
 
@@ -10,7 +11,7 @@ import (
 
 func InitWindowsRoutes(routeGroup *gin.RouterGroup) {
 
-	r := routeGroup.Group("/platform/windows")
+	r := routeGroup.Group("/windows").Use(middleware.Auth())
 	r.POST("/send-command", sendCommand)
 }
 

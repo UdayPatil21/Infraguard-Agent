@@ -71,24 +71,3 @@ func executeScriptService(input model.Executable) (model.CmdOutput, error) {
 	cmd.Output = string(out)
 	return cmd, nil
 }
-
-func sudoCommandService(input model.RunCommand) (any, error) {
-	logger.Info("IN:sudoCommandService")
-	// var machineId []byte
-	// Check machine ID
-	// machineId, _ = exec.Command("bash", "-c", "cat /etc/machine-id").Output()
-
-	// if input.MachineID != strings.TrimSpace(string(machineId)) {
-	// 	logger.Error("Error: Machine Id mismatched")
-	// 	return nil, errors.New("machine id mismatched")
-	// }
-	// logger.Info("Matched")
-	//sudo command
-	cmd, err := exec.Command("bash", "-c", "echo", "Digi@2023 ", " |", "sudo", "-S", "-k", input.Command).Output()
-	if err != nil {
-		return "", err
-	}
-
-	logger.Info("OUT:sudoCommandService")
-	return string(cmd), nil
-}
