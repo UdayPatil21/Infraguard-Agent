@@ -5,7 +5,9 @@ import (
 	"infraguard-agent/helpers/configHelper"
 	"infraguard-agent/helpers/logger"
 	"infraguard-agent/middleware"
+	model "infraguard-agent/models"
 	"infraguard-agent/routes"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,10 +15,10 @@ import (
 func main() {
 
 	// Get and set global variables for activation details
-	// activation_Id := os.Args[1]
-	// activation_Code := os.Args[2]
-	// model.Activation_Id = activation_Id
-	// model.Activation_Code = activation_Code
+	activation_Id := os.Args[1]
+	activation_Code := os.Args[2]
+	model.Activation_Id = activation_Id
+	model.Activation_Code = activation_Code
 
 	StartServer()
 }

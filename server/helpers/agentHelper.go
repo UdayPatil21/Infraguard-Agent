@@ -169,8 +169,8 @@ func PreCheck() error {
 		// time.Now(),
 		// activationNumber, //AgentActivationID
 		model.Activation_Id,
-		// "KSH1DLFWBE1Z3MR9IND7",
-		// "99b74840-99ac-40c4-9718-182465b3098c",
+		// "a49eaf2a-04a2-454e-9e11-6d1c7a37fcf6",
+		// "53616d706c652041637469766174696f6e",
 		model.Activation_Code,
 		// time.Now(),
 	}
