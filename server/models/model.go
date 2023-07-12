@@ -19,8 +19,8 @@ type RunCommand struct {
 }
 
 type Executable struct {
-	Script string
-	// SerialID string `json:"SerialID"`
+	Script   string
+	Platform string
 }
 type CmdOutput struct {
 	Output string

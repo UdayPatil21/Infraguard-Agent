@@ -1,24 +1,18 @@
 package routes
 
 import (
-	"infraguard-agent/api/linux"
-	"infraguard-agent/api/windows"
-	"infraguard-agent/helpers/logger"
-	"net/http"
+	"infraguard-agent/api"
+	"infraguard-agent/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Init(route *gin.Engine) {
 
-	routeGroup := route.Group("/api")
-	routeGroup.GET("/checkStatus", serverStatus)
-	windows.InitWindowsRoutes(routeGroup)
-	linux.InitLinuxRoutes(routeGroup)
-}
-
-// Check server status
-func serverStatus(c *gin.Context) {
-	logger.Info("Check Status")
-	c.JSON(http.StatusOK, "Success")
+	routeGroup := route.Group("/api").Use(middleware.Auth())
+	routeGroup.GET("/checkStatus", api.ServerStatus)
+	// routeGroup.POST("/command/execute", sendCommand)
+	routeGroup.POST("/script/execute", api.ExecuteScript)
+	// windows.InitWindowsRoutes(routeGroup)
+	// linux.InitLinuxRoutes(routeGroup)
 }

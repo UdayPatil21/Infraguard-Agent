@@ -34,8 +34,8 @@ func SanitizeScript(script string) string {
 	// s := strings.ReplaceAll(s2, "\\", "")
 	return s2
 }
-func executeScriptService(input model.Executable) (model.CmdOutput, error) {
-	logger.Info("IN:executeScriptService")
+func ExecuteScriptService(input model.Executable) (model.CmdOutput, error) {
+	logger.Info("IN:ExecuteScriptService")
 	// var script string
 	// json.Unmarshal(input.Script, &script)
 	cmd := model.CmdOutput{}
@@ -67,7 +67,7 @@ func executeScriptService(input model.Executable) (model.CmdOutput, error) {
 		logger.Error("Error executing the script file", err)
 		return cmd, err
 	}
-	logger.Info("OUT:executeScriptService")
+	logger.Info("OUT:ExecuteScriptService")
 	cmd.Output = string(out)
 	return cmd, nil
 }

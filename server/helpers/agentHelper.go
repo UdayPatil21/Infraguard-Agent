@@ -8,6 +8,7 @@ import (
 	"infraguard-agent/helpers/configHelper"
 	"infraguard-agent/helpers/logger"
 	model "infraguard-agent/models"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os/exec"
@@ -56,6 +57,25 @@ func GetActivation() (model.Clusters, error) {
 	json.Unmarshal(bodyBytes, &res)
 	return res.Data, nil
 }
+func findOSName() string {
+	systemCmd := exec.Command("systeminfo")
+	findCmd := exec.Command("findstr", "/B", "/C:OS Name")
+
+	reader, writer := io.Pipe()
+	buf := bytes.NewBuffer(nil)
+	systemCmd.Stdout = writer
+	findCmd.Stdin = reader
+	findCmd.Stdout = buf
+	systemCmd.Start()
+	findCmd.Start()
+	systemCmd.Wait()
+	writer.Close()
+	findCmd.Wait()
+	reader.Close()
+
+	// fmt.Println(">>" + buf.String())
+	return Getdata(buf.String(), "OSName")
+}
 func PreCheck() error {
 
 	// Make it config based
@@ -92,7 +112,7 @@ func PreCheck() error {
 	var getImageName any
 
 	if goos == "darwin" {
-		println("System is Windows")
+		println("System is MAC")
 		// getName, _ = exec.Command("bash", "-c", "id -F").Output()
 		getUserName, _ = exec.Command("bash", "-c", "id -un").Output()
 		getPublicIp, _ = exec.Command("bash", "-c", "curl ifconfig.me && echo").Output()
@@ -107,12 +127,16 @@ func PreCheck() error {
 
 		//ipconfig | findstr /r /c:"IPv4"
 		out, _ := exec.Command("cmd", "/C", "ipconfig | findstr /r /c:IPv4").Output()
-		getPublicIp = Getdata(string(out), "IP")
+		getPrivateIp = Getdata(string(out), "IP")
 		getHostName, _ = exec.Command("cmd", "/C", "hostname").Output()
 
 		//wmic NICCONFIG WHERE IPEnabled=true GET MACAddres
 		out1, _ := exec.Command("cmd", "/C", "wmic NICCONFIG WHERE IPEnabled=true GET MACAddress").Output()
 		getMachineId = Getdata(string(out1), "MAC")
+
+		//systeminfo | findstr /B /C:"OS Name"
+		//Get os name on windows servers
+		getImageName = findOSName()
 
 	}
 	if goos == "linux" {
@@ -217,6 +241,9 @@ func Getdata(str, flag string) string {
 	case "INET":
 		res := strings.Split(str, " ")
 		result = res[0]
+	case "OSName":
+		res := strings.Split(str, ":")
+		result = strings.TrimSpace(res[1])
 	default:
 		fmt.Println("default")
 	}

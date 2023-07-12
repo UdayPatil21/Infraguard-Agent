@@ -1,7 +1,7 @@
 {
     "AppVersion": "1.0.0",
-    "Port": "8080",
+    "Port": "4200",
     "Mode": "Development",
-    "JwtSecretKey": "secretkey",
-    "ManagerURL":"https://df3d-2401-4900-1f38-731c-3886-8f01-11f1-7ec7.in.ngrok.io/api/instance-info"
+    "JwtSecretKey": "SuperSecretKey",
+    "ManagerURL":"http://localhost:8080/api/agent/"
 }
