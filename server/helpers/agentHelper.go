@@ -29,10 +29,10 @@ func GetNetworkIP() string {
 	return string(content)
 }
 
-// type Response struct {
-// 	Data   model.Clusters
-// 	Status string
-// }
+//	type Response struct {
+//		Data   model.Clusters
+//		Status string
+//	}
 type Response struct {
 	Data   model.Clusters
 	Status bool
@@ -49,7 +49,7 @@ func GetActivation() (model.Clusters, error) {
 	client := &http.Client{Transport: tr}
 	resp, err := client.Get(configHelper.GetString("ManagerURL") + "getAgentActivation" + model.Activation_Id)
 	if err != nil {
-		logger.Error("Error getting activation data by name", err)
+		logger.Log.Sugar().Errorf("Error getting activation data by name", err)
 		return activation, err
 	}
 	defer resp.Body.Close()
@@ -86,15 +86,15 @@ func PreCheck() error {
 	//Get activation details from manager
 	// activationDetais, err := GetActivation()
 	// if err != nil {
-	// 	logger.Error("error getting activation info", err)
+	// 	logger.Log.Sugar().Errorf("error getting activation info", err)
 	// 	return err
 	// }
 	// activationId, _ := uuid.Parse(model.Activation_Id)
 	//Validate activation details
 	// if activationDetais.ActivationID != model.Activation_Id && activationDetais.ActivationCode != model.Activation_Code {
-	// 	logger.Error("NO ACTIVATION AVAILABLE FOR PROVIDED DETAILS! PLEASE PROVIDE CORRECT ACTIVATION DETAILS")
-	// 	logger.Error(activationDetais.ActivationID, "model"+model.Activation_Id)
-	// 	logger.Error(activationDetais.ActivationCode, "model"+model.Activation_Code)
+	// 	logger.Log.Sugar().Errorf("NO ACTIVATION AVAILABLE FOR PROVIDED DETAILS! PLEASE PROVIDE CORRECT ACTIVATION DETAILS")
+	// 	logger.Log.Sugar().Errorf(activationDetais.ActivationID, "model"+model.Activation_Id)
+	// 	logger.Log.Sugar().Errorf(activationDetais.ActivationCode, "model"+model.Activation_Code)
 	// 	//panic server because no need of further execution
 	// 	panic("NO ACTIVATION AVAILABLE FOR PROVIDED DETAILS! PLEASE PROVIDE CORRECT ACTIVATION DETAILS")
 	// }
@@ -207,7 +207,7 @@ func PreCheck() error {
 	client := &http.Client{Transport: tr}
 	resp, err := client.Post(configHelper.GetString("ManagerURL")+"registration/serverinfo", "application/json; charset=utf-8", bytes.NewBuffer(jsonReq))
 	if err != nil {
-		logger.Error("Error in resistering agent", err)
+		logger.Log.Sugar().Errorf("Error in resistering agent", err)
 		return err
 	}
 	defer resp.Body.Close()
@@ -215,15 +215,15 @@ func PreCheck() error {
 	//Get output data from the response
 	err = json.Unmarshal(bodyBytes, &out)
 	if err != nil {
-		logger.Error("Error Unmarshaling Data", err)
+		logger.Log.Sugar().Errorf("Error Unmarshaling Data", err)
 		return err
 	}
-	logger.Info(out)
+	logger.Log.Sugar().Info(out)
 	str := "Agent Already Resistered"
 	if out.Status && out.Data == str {
 		err := UpdateAgentInfo(serverInfo)
 		if err != nil {
-			logger.Error("Error Updating Server Data", err)
+			logger.Log.Sugar().Errorf("Error Updating Server Data", err)
 			return err
 		}
 	}
@@ -250,27 +250,27 @@ func Getdata(str, flag string) string {
 	return result
 }
 
-//Update server info  on restart or network change
+// Update server info  on restart or network change
 func UpdateAgentInfo(server model.Servers) error {
-	logger.Info("IN:UpdateAgentInfo")
-	logger.Info(server)
+	logger.Log.Info("IN:UpdateAgentInfo")
+	logger.Log.Sugar().Info(server)
 	client := http.Client{}
 	out := model.Response{}
 	jsonReq, _ := json.Marshal(server)
 	resp, err := client.Post(configHelper.GetString("ManagerURL")+"update/serverinfo", "application/json; charset=utf-8", bytes.NewBuffer([]byte(jsonReq)))
 	if err != nil {
-		logger.Error("Error updating agent public IP", err)
+		logger.Log.Sugar().Errorf("Error updating agent public IP", err)
 	}
 	defer resp.Body.Close()
 	bodyBytes, _ := ioutil.ReadAll(resp.Body)
 	//Get output data from the response
 	err = json.Unmarshal(bodyBytes, &out)
 	if err != nil {
-		logger.Error("Error Unmarshaling Data", err)
+		logger.Log.Sugar().Errorf("Error Unmarshaling Data", err)
 		return err
 	}
 	if !out.Status {
-		logger.Error("Error Updating Server Data")
+		logger.Log.Sugar().Errorf("Error Updating Server Data")
 		return err
 	}
 	return nil

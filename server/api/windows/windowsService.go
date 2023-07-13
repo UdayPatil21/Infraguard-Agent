@@ -14,28 +14,28 @@ import (
 )
 
 func sendCommandService(input model.RunCommand) (any, error) {
-	logger.Info("IN:sendCommandService")
+	logger.Log.Info("IN:sendCommandService")
 	var getMachineId []byte
 	// Check machine ID - MAC ID for windows
 	getMachineId, _ = exec.Command("cmd", "/C", "wmic NICCONFIG WHERE IPEnabled=true GET MACAddress").Output()
 	machineId := helper.Getdata(string(getMachineId), "MAC")
 
 	if input.MachineID != strings.TrimSpace(string(machineId)) {
-		logger.Error("Error: Machine Id mismatched")
+		logger.Log.Sugar().Errorf("Error: Machine Id mismatched")
 		return nil, errors.New("machine id mismatched")
 	}
-	logger.Info("Matched")
+	logger.Log.Info("Matched")
 	cmd, err := exec.Command("cmd", "/C", input.Command).Output()
 	if err != nil {
-		logger.Error("Error executing the command", err)
+		logger.Log.Sugar().Errorf("Error executing the command", err)
 		return nil, err
 	}
-	logger.Info("OUT:sendCommandService")
+	logger.Log.Info("OUT:sendCommandService")
 	return string(cmd), nil
 }
 
 func ExecuteScriptService(input model.Executable) (model.CmdOutput, error) {
-	logger.Info("IN:ExecuteScriptService")
+	logger.Log.Info("IN:ExecuteScriptService")
 	// var getMachineId []byte
 	CmdOutput := model.CmdOutput{}
 	// Check machine ID - MAC ID for windows
@@ -43,7 +43,7 @@ func ExecuteScriptService(input model.Executable) (model.CmdOutput, error) {
 	// machineId := helper.Getdata(string(getMachineId), "MAC")
 
 	// if input.MachineID != strings.TrimSpace(string(machineId)) {
-	// 	logger.Error("Error: Machine Id mismatched")
+	// 	logger.Log.Sugar().Errorf("Error: Machine Id mismatched")
 	// 	return CmdOutput, errors.New("machine id cannot matched with server machine id")
 	// }
 	updatedString := linux.SanitizeScript(input.Script)
@@ -54,13 +54,13 @@ func ExecuteScriptService(input model.Executable) (model.CmdOutput, error) {
 	_, err := file.WriteString(updatedString)
 	// err = os.WriteFile(fileName, writeData, 0777)
 	if err != nil {
-		logger.Error("Error saving script file on instance", err)
+		logger.Log.Sugar().Errorf("Error saving script file on instance", err)
 		return CmdOutput, err
 	}
 	//change permissions of script file
 	// _, err = exec.Command("cmd", "/C", "chmod "+model.Permissions+" "+fileName).Output()
 	// if err != nil {
-	// 	logger.Error("Error in change permissions", err)
+	// 	logger.Log.Sugar().Errorf("Error in change permissions", err)
 	// 	return cmd, err
 	// }
 
@@ -74,7 +74,7 @@ func ExecuteScriptService(input model.Executable) (model.CmdOutput, error) {
 	cmd := exec.Command("powershell", "./"+fileName)
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		logger.Error("Error executing the script file", err)
+		logger.Log.Sugar().Errorf("Error executing the script file", err)
 		return CmdOutput, err
 	}
 	go func() {
@@ -84,10 +84,10 @@ func ExecuteScriptService(input model.Executable) (model.CmdOutput, error) {
 	}()
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		logger.Error("Error getting command output", err)
+		logger.Log.Sugar().Errorf("Error getting command output", err)
 		return CmdOutput, err
 	}
-	logger.Info("OUT:ExecuteScriptService")
+	logger.Log.Info("OUT:ExecuteScriptService")
 	CmdOutput.Output = string(out)
 	return CmdOutput, nil
 }

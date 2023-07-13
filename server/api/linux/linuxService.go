@@ -11,22 +11,22 @@ import (
 )
 
 func sendCommandService(input model.RunCommand) (any, error) {
-	logger.Info("IN:sendCommandService")
+	logger.Log.Info("IN:sendCommandService")
 	var machineId []byte
 	// Check machine ID
 	machineId, _ = exec.Command("bash", "-c", "cat /etc/machine-id").Output()
 
 	if input.MachineID != strings.TrimSpace(string(machineId)) {
-		logger.Error("Error: Machine Id mismatched")
+		logger.Log.Sugar().Errorf("Error: Machine Id mismatched")
 		return nil, errors.New("machine id mismatched")
 	}
-	logger.Info("Matched")
+	logger.Log.Info("Matched")
 	cmd, err := exec.Command("bash", "-c", input.Command).Output()
 	if err != nil {
-		logger.Error("Error executing the command", err)
+		logger.Log.Sugar().Errorf("Error executing the command", err)
 		return nil, err
 	}
-	logger.Info("OUT:sendCommandService")
+	logger.Log.Info("OUT:sendCommandService")
 	return string(cmd), nil
 }
 func SanitizeScript(script string) string {
@@ -35,7 +35,7 @@ func SanitizeScript(script string) string {
 	return s2
 }
 func ExecuteScriptService(input model.Executable) (model.CmdOutput, error) {
-	logger.Info("IN:ExecuteScriptService")
+	logger.Log.Info("IN:ExecuteScriptService")
 	// var script string
 	// json.Unmarshal(input.Script, &script)
 	cmd := model.CmdOutput{}
@@ -43,7 +43,7 @@ func ExecuteScriptService(input model.Executable) (model.CmdOutput, error) {
 	// convert updatedString into bytes
 	// writeData, err := json.Marshal(updatedString)
 	// if err != nil {
-	// 	logger.Error("Error unmarshaling updated string to bytes", err)
+	// 	logger.Log.Sugar().Errorf("Error unmarshaling updated string to bytes", err)
 	// 	return "", err
 	// }
 	//Create file and write script data
@@ -52,22 +52,22 @@ func ExecuteScriptService(input model.Executable) (model.CmdOutput, error) {
 	_, err := file.WriteString(updatedString)
 	// err = os.WriteFile(fileName, writeData, 0777)
 	if err != nil {
-		logger.Error("Error saving script file on instance", err)
+		logger.Log.Sugar().Errorf("Error saving script file on instance", err)
 		return cmd, err
 	}
 	//change permissions of script file
 	_, err = exec.Command("bash", "-c", "chmod "+model.Permissions+" "+fileName).Output()
 	if err != nil {
-		logger.Error("Error in change permissions", err)
+		logger.Log.Sugar().Errorf("Error in change permissions", err)
 		return cmd, err
 	}
 	//execute script file
 	out, err := exec.Command("bash", "./"+fileName).Output()
 	if err != nil {
-		logger.Error("Error executing the script file", err)
+		logger.Log.Sugar().Errorf("Error executing the script file", err)
 		return cmd, err
 	}
-	logger.Info("OUT:ExecuteScriptService")
+	logger.Log.Info("OUT:ExecuteScriptService")
 	cmd.Output = string(out)
 	return cmd, nil
 }

@@ -5,12 +5,37 @@ import (
 	"log"
 	"os"
 	"time"
+
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 const (
 	LogsDirpath = "../logs"
 )
 
+var Log *zap.Logger
+
+func Initialize() {
+	//Create logs folder
+	Init()
+	//To create logs in logs.json file
+	config := zap.NewProductionEncoderConfig()
+	config.EncodeTime = zapcore.ISO8601TimeEncoder
+	fileEncoder := zapcore.NewJSONEncoder(config)
+	logFile := SetLogFile()
+	writer := zapcore.AddSync(logFile)
+	defaultLogLevel := zapcore.DebugLevel
+
+	//To create logs in console
+	consoleEncoder := zapcore.NewConsoleEncoder(config)
+	core := zapcore.NewTee(
+		zapcore.NewCore(fileEncoder, writer, defaultLogLevel),
+		zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), defaultLogLevel),
+	)
+	Log = zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
+
+}
 func Init() {
 
 	err := os.Mkdir(LogsDirpath, 0777)

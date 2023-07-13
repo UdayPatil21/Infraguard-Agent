@@ -12,20 +12,20 @@ import (
 
 // Check server status
 func ServerStatus(c *gin.Context) {
-	logger.Info("Check Status")
+	logger.Log.Info("Check Status")
 	c.JSON(http.StatusOK, "Success")
 }
 
-//Ececute  script on different servers
-//On the basis of OS plaform
+// Ececute  script on different servers
+// On the basis of OS plaform
 func ExecuteScript(c *gin.Context) {
-	logger.Info("IN:executeScript")
+	logger.Log.Info("IN:executeScript")
 
 	var input model.Executable
 	var response model.CmdOutput
 	err := c.Bind(&input)
 	if err != nil {
-		logger.Error("error binding data", err)
+		logger.Log.Sugar().Errorf("error binding data", err)
 		c.JSON(http.StatusExpectationFailed, err)
 		return
 	}
@@ -34,13 +34,13 @@ func ExecuteScript(c *gin.Context) {
 	case "Linux":
 		response, err = linux.ExecuteScriptService(input)
 		if err != nil {
-			logger.Error("Error executing script on linux server", err)
+			logger.Log.Sugar().Errorf("Error executing script on linux server", err)
 			c.JSON(http.StatusExpectationFailed, err)
 		}
 	case "Windows":
 		response, err = windows.ExecuteScriptService(input)
 		if err != nil {
-			logger.Error("Error executing script on windows server", err)
+			logger.Log.Sugar().Errorf("Error executing script on windows server", err)
 			c.JSON(http.StatusExpectationFailed, err)
 		}
 
@@ -48,6 +48,6 @@ func ExecuteScript(c *gin.Context) {
 
 	}
 
-	logger.Info("OUT:executeScript")
+	logger.Log.Info("OUT:executeScript")
 	c.JSON(http.StatusOK, response.Output)
 }

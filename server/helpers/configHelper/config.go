@@ -22,10 +22,10 @@ func InitConfig() {
 	v.AutomaticEnv()
 	if err := v.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			logger.Error("config file not found", err)
+			logger.Log.Sugar().Errorf("config file not found", err)
 		}
-		logger.Error("config file not found", err)
-		logger.Info("config file not found", err)
+		logger.Log.Sugar().Errorf("config file not found", err)
+		logger.Log.Sugar().Info("config file not found", err)
 	}
 
 	cnf = v
